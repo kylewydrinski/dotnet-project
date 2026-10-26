@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "VI65GFbmut4=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\kytw7\\dotnet-project\\dotnet-project\\dotnet-project.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\kytw7\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.14\\microsoft.aspnetcore.openapi.10.0.14.nupkg.sha512",
+    "C:\\Users\\kytw7\\.nuget\\packages\\microsoft.openapi\\2.12.2\\microsoft.openapi.2.12.2.nupkg.sha512"
+  ],
+  "logs": []
+}
