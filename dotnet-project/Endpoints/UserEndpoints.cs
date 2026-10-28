@@ -1,5 +1,8 @@
 
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using dotnet_project.Data;
 using dotnet_project.Models;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +14,24 @@ public static class UserEndpoints
 {
     public static void Map(WebApplication app)
     {
+        app.MapGet("/api/users/me", (ClaimsPrincipal principal) =>
+        {
+            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var username = principal.FindFirstValue(ClaimTypes.Name);
+
+            if (!int.TryParse(userId, out var parsedUserId) ||
+                username is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            return Results.Ok(new
+            {
+                UserId = parsedUserId,
+                Username = username
+            });
+        }).RequireAuthorization();
+
         app.MapPost("/api/users/signup", async (
             SignupRequest request,
             DotNetContext db,
@@ -102,7 +123,8 @@ public static class UserEndpoints
         _ = app.MapPost("/api/users/login", async (
             LoginRequest request,
             DotNetContext db,
-            IPasswordHasher<User> passwordHasher) =>
+            IPasswordHasher<User> passwordHasher,
+            HttpContext httpContext) =>
         {
             // Validate input
             if (string.IsNullOrWhiteSpace(request.Username) ||
@@ -150,7 +172,19 @@ public static class UserEndpoints
                     return Results.Unauthorized();
                 }
 
-                // Successful login
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, user.Role)
+                };
+                var identity = new ClaimsIdentity(
+                    claims,
+                    CookieAuthenticationDefaults.AuthenticationScheme);
+                await httpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(identity));
+
                 return Results.Ok(new
                 {
                     user.UserId,
@@ -163,6 +197,16 @@ public static class UserEndpoints
                 return Results.StatusCode(500);
             }
         });
+
+        app.MapPost("/api/users/logout", async (HttpContext httpContext) =>
+        {
+            await httpContext.SignOutAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
+            return Results.Ok(new
+            {
+                message = "Logged out successfully."
+            });
+        }).RequireAuthorization();
     }
 }
 
