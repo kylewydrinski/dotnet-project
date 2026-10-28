@@ -1,31 +1,29 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace dotnet_project.Models;
 
-[Table("Users", Schema = "dbo")]
+[Table("Users")]
 public class User
 {
     [Key]
     public int UserId { get; set; }
 
-    [Required]
-    [MaxLength(50)]
+    [Required, MaxLength(50)]
     public string Username { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(256)]
-    [EmailAddress]
+    [Required, MaxLength(256), EmailAddress]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(512)]
+    [Required, MaxLength(512)]
     public string PasswordHash { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(20)]
+    [Required, MaxLength(20)]
     public string Role { get; set; } = "User";
 
     public DateTime CreatedAt { get; set; }
+
+    public ICollection<Category> Categories { get; set; } = new List<Category>();
+    public ICollection<Term> Terms { get; set; } = new List<Term>();
+    public ICollection<StudyGuide> StudyGuides { get; set; } = new List<StudyGuide>();
 }
